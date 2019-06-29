@@ -22,8 +22,15 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 
+default-extensions:
+- NamedFieldPuns
+- TupleSections
+- LambdaCase
+
 library:
   source-dirs: src
+  dependencies:
+  - data-default
 
 executables:
   birpana-exe:
