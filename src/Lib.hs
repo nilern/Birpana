@@ -29,6 +29,10 @@ class Sequential f where
 infixl 5 <**>
 (<**>) = with
 
+(**>) :: (PrismFunctor f, Sequential f) => f () -> f a -> f a
+infixl 5 **>
+s **> s' = Prism {inj = \(_, x) -> x, tryProj = Just . ((),)} <$$> s <**> s'
+
 class Alternative f where
     orElse :: f a -> f a -> f a
     empty :: f a
@@ -52,12 +56,11 @@ instance PrismFunctor (Syntax e) where
                , display = tryProj >=> display }
 
 instance Sequential (Syntax e) where
-    with (Syntax {parse, display}) (Syntax {parse = parse', display = display'}) =
-        Syntax {parse = parse'', display = display''}
-        where parse'' input = do (l, input) <- parse input
-                                 (r, input) <- parse' input
+    with s s' = Syntax {parse = parse'', display = display''}
+        where parse'' input = do (l, input) <- parse s input
+                                 (r, input) <- parse s' input
                                  return ((l, r), input)
-              display'' (l, r) = (<>) <$> (display l) <*> (display' r)
+              display'' (l, r) = (<>) <$> (display s l) <*> (display s' r)
 
 instance Default e => Alternative (Syntax e) where
     orElse (Syntax {parse, display}) (Syntax {parse = parse', display = display'}) =
